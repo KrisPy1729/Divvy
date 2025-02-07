@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from divvy_streamlit_functions import get_data, get_data_lang, feeds_extractor, st_lang_buttons
+from divvy_streamlit_functions import *
 
 def main():
     """ Main guy DUH! """
@@ -33,11 +33,21 @@ def main():
         st.warning("The feed doesn't contain data in any defined languages")
         return
     
-    # Trying to pass the damn thing station_information into a dataframe
-    station_information_df = pd.json_normalize(divvy_feeds_json['station_information']['stations'], max_level=1)
-    # WHY WON'T YOU WORK?!! YOU FREAKING COMMIE!!
-    st.write(station_information_df.head())
+    # Passes station_information to a dataframe using json_normalize
+    station_information_df = pd.json_normalize(divvy_feeds_json['station_information']['stations'])
+    # Passes station_status to a dataframe using json_normalize, the array has a list of dictionaries vehicle_types_available, so using record_path and meta to flatten it.
+    station_status_df = pd.json_normalize(divvy_feeds_json['station_status']['stations'], record_path='vehicle_types_available', 
+                                          meta=['num_docks_available', 'num_bikes_available', 'is_renting', 'is_installed', 
+                                                'num_docks_disabled', 'num_scooters_available', 'num_bikes_disabled', 'last_reported', 
+                                                'is_returning', 'num_ebikes_available', 'station_id', 'num_scooters_unavailable'], errors='ignore')
     
+    # Passes free_bike_status to a dataframe using json_normalize
+    free_bike_status_df = pd.json_normalize(divvy_feeds_json['free_bike_status']['bikes'])
+    
+    # using st.write to write the tables to the dashboard to verify
+    st.write(station_information_df.head())
+    st.write(station_status_df.head())
+    st.write(free_bike_status_df.head())
 
 if __name__ == "__main__":
     # Will help later in functional testing.... or so I think
