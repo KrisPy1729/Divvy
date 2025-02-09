@@ -17,7 +17,12 @@ def get_divvy_data(url):
 def create_station_dashboard(divvy_data, lang):
     """Process and create the station dashboard data."""
     # Display title
-    st.title("Divvy Bike Dashboard")
+    if lang == "en":
+        st.title("Divvy Bikes Dashboard")
+    elif lang == "es":
+        st.title("Disponibilidad de bici Divvy")
+    elif lang == "fr":
+        st.title("Disponibilité des vélos Divvy")
 
     if divvy_data is None:
         return None
@@ -74,19 +79,37 @@ def create_station_dashboard(divvy_data, lang):
 
 # Caching the map creation process
 @st.cache_data(show_spinner=False)
-def create_map(station_dashboard_df):
+def create_map(station_dashboard_df, lang):
     """Create the folium map."""
     map = folium.Map(location=[41.881832, -87.623177], zoom_start=10)
     
     mc = MarkerCluster().add_to(map)
 
     for index, row in station_dashboard_df.iterrows():
-        tooltip_text = "<br>".join([ f"📌<b>{row['name']}</b>", 
-                                    f"Available empty docks: {row['num_docks_available']} 🅿️", 
-                                    f"Available Bikes: {row['available_Bike']} 🚲", 
-                                    f"Available <b><span style='color: gold;'>E-Bikes</span></b>: {row['available_E-Bike']} 🚲⚡",
-                                    f"Available <b><span style='color: gold;'>E-Scooters</span></b>: {row['available_E-Scooter']} 🛴⚡"
-                                   ])
+        if lang == "en":
+            tooltip_text = "<br>".join([ f"📌<b>{row['name']}</b>", 
+                                        f"Available empty docks: {row['num_docks_available']} 🅿️", 
+                                        f"Available Bikes: {row['available_Bike']} 🚲", 
+                                        f"Available <b><span style='color: gold;'>E-Bikes</span></b>: {row['available_E-Bike']} 🚲⚡",
+                                        f"Available <b><span style='color: gold;'>E-Scooters</span></b>: {row['available_E-Scooter']} 🛴⚡"
+                                    ])
+        elif lang == "es":
+            tooltip_text = "<br>".join([ f"📌<b>{row['name']}</b>", 
+                                        f"Lugares de bici vacíos disponibles: {row['num_docks_available']} 🅿️", 
+                                        f"Bicicletas disponibles: {row['available_Bike']} 🚲", 
+                                        f"<b><span style='color: gold;'>E-Bici</span></b> disponibles: {row['available_E-Bike']} 🚲⚡",
+                                        f"<b><span style='color: gold;'>E-Patinetes</span></b> disponibles: {row['available_E-Scooter']} 🛴⚡"
+                                    ])
+        elif lang == "fr":
+            tooltip_text = "<br>".join([ f"📌<b>{row['name']}</b>", 
+                                        f"Quais de vélos vacants disponibles: {row['num_docks_available']} 🅿️", 
+                                        f"Vélos disponibles: {row['available_Bike']} 🚲", 
+                                        f"<b><span style='color: gold;'>E-Vélos</span></b> disponibles: {row['available_E-Bike']} 🚲⚡",
+                                        f"<b><span style='color: gold;'>E-Trottinettes</span></b> disponibles: {row['available_E-Scooter']} 🛴⚡"
+                                    ])
+
+
+
         if (row['is_installed'] == 1) & (row['is_renting'] == 1):
             icon_color = 'green'
             icon_type = 'ok-sign'
@@ -124,7 +147,7 @@ def main():
         return
     
     # Creating the map (cached)
-    map = create_map(station_dashboard_df)
+    map = create_map(station_dashboard_df, lang)
 
     # Displaying the map using streamlit_folium
     st_folium(map, height=500, width=700, returned_objects=[])
