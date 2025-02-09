@@ -87,10 +87,10 @@ def create_map(station_dashboard_df):
     mc = MarkerCluster()
 
     for index, row in station_dashboard_df.iterrows():
-        tooltip_text = "<br>".join([ f"📌{row['name']}", f"Available empty docks: {row['num_docks_available']} 🅿️", 
+        tooltip_text = "<br>".join([ f"📌<b>{row['name']}</b>", f"Available empty docks: {row['num_docks_available']} 🅿️", 
                                     f"Available Bikes: {row['available_Bike']} 🚲", 
-                                    f"Available E-Bikes: {row['available_E-Bike']} 🚲⚡",
-                                    f"Available E-Scooters: {row['available_E-Scooter']} 🛴⚡"
+                                    f"Available <span style='color: gold;'>E-Bikes</span>: {row['available_E-Bike']} 🚲⚡",
+                                    f"Available <span style='color: gold;'>E-Scooters</span>: {row['available_E-Scooter']} 🛴⚡"
                                    ])
         marker = folium.Marker(
             location=[row['lat'], row['lon']], 
