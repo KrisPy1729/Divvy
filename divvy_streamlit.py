@@ -6,19 +6,14 @@ from folium.plugins import MarkerCluster
 from streamlit_folium import st_folium
 from divvy_streamlit_functions import *
 
-
 # Caching the data fetching function
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def get_divvy_data(url):
     """ Fetching data using the function containing the requests library """
     return get_data(url)
 
-
-
-
-
 # Caching the dataframe creation and data processing
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def create_station_dashboard(divvy_data, lang):
     """Process and create the station dashboard data."""
     # Display title
@@ -77,32 +72,39 @@ def create_station_dashboard(divvy_data, lang):
 
     return station_dashboard_df
 
-
 # Caching the map creation process
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def create_map(station_dashboard_df):
     """Create the folium map."""
     map = folium.Map(location=[41.881832, -87.623177], zoom_start=10)
-    # folium.TileLayer('cartodbdark_matter').add_to(map)
-    mc = MarkerCluster()
+    
+    mc = MarkerCluster().add_to(map)
 
     for index, row in station_dashboard_df.iterrows():
-        tooltip_text = "<br>".join([ f"📌<b>{row['name']}</b>", f"Available empty docks: {row['num_docks_available']} 🅿️", 
+        tooltip_text = "<br>".join([ f"📌<b>{row['name']}</b>", 
+                                    f"Available empty docks: {row['num_docks_available']} 🅿️", 
                                     f"Available Bikes: {row['available_Bike']} 🚲", 
-                                    f"Available <span style='color: gold;'>E-Bikes</span>: {row['available_E-Bike']} 🚲⚡",
-                                    f"Available <span style='color: gold;'>E-Scooters</span>: {row['available_E-Scooter']} 🛴⚡"
+                                    f"Available <b><span style='color: gold;'>E-Bikes</span></b>: {row['available_E-Bike']} 🚲⚡",
+                                    f"Available <b><span style='color: gold;'>E-Scooters</span></b>: {row['available_E-Scooter']} 🛴⚡"
                                    ])
-        marker = folium.Marker(
+        if (row['is_installed'] == 1) & (row['is_renting'] == 1):
+            icon_color = 'green'
+            icon_type = 'ok-sign'
+        elif (row['is_installed'] == 0) | (row['is_renting'] == 0):
+            icon_color = 'red'
+            icon_type = 'remove-sign'
+
+        folium.Marker(
             location=[row['lat'], row['lon']], 
-            tooltip= tooltip_text,
-            icon=folium.Icon(color='red', icon='info-sign')
-        )
+            tooltip=tooltip_text,
+            icon=folium.Icon(color=icon_color, icon=icon_type, popup=tooltip_text)
+        ).add_to(mc)
 
-            
-        mc.add_child(marker)
+    folium.LayerControl().add_to(map)
+    # Add the marker cluster to the map
     map.add_child(mc)
+    
     return map
-
 
 def main():
     """Main function for the dashboard."""
@@ -126,7 +128,6 @@ def main():
 
     # Displaying the map using streamlit_folium
     st_folium(map, height=500, width=700, returned_objects=[])
-
 
 if __name__ == "__main__":
     main()
