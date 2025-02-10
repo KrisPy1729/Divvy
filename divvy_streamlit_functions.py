@@ -1,8 +1,7 @@
 import requests
-import time
 import streamlit as st
 
-def get_data(url, retries=4, delay=5):
+def get_data(url, retries=4):
     """ This function gets json response of a given url using requests and generate appropriate error responses if necessary """
     
     for _ in range(retries):
@@ -18,10 +17,8 @@ def get_data(url, retries=4, delay=5):
         except requests.exception.RequestException as request_error:
             # if the request didn't go through to the server at all, then displays respective errors
             st.error(f"Request failed: {request_error}")
-            
-        # delays each execution of the for loop by 'delay' seconds
-        time.sleep(delay)
-
+           
+        
 def get_data_lang(feed_data, l="en"):
     """ This function gets the json response and required language as parameters and returns the json of that specific language key """
     
